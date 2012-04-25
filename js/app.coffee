@@ -72,17 +72,33 @@ jQuery ->
   ########
   class CloudCrontabRouter extends Backbone.Router
     routes:
-      "help":     "help"
-      "help2":    "help2"
+      "":     "tasks"
+      "login":    "login"
       "help3":    "help3"
     initialize: ->
-      alert 'init'
-    help: ->
-      alert 'help'
-    help2: ->
-      alert 'help2'
+      console.log 'init'
+    login: ->
+      console.log 'login'
+      # $('#loginModal').modal('show')
+    tasks: ->
+      if !isLoggedIn()
+        return app.navigate 'login', {trigger: true}
+      alert 'tasks'
     help3: ->
       alert 'help3'
 
-  app = new CloudCrontabRouter();
-  Backbone.history.start();
+  ########
+  # Functions
+  ########
+  isLoggedIn = ->
+    return !!localStorage.getItem 'api-key'
+  setLogin = (token) ->
+    localStorage.setItem 'api-key', token
+  getLogin = ->
+    localStorage.getItem 'api-key'
+
+  ########
+  # Start
+  ########
+  app = new CloudCrontabRouter()
+  Backbone.history.start()
