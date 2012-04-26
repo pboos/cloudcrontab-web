@@ -71,18 +71,19 @@ jQuery ->
     el: $ '.content-login'
     initialize: ->
       $(@el).removeClass 'hide'
-    events: 'click button': 'login'
+    events: 'click .login': 'login'
+    events: 'click .register': 'register'
     login: ->
+      alert 'login'
       email = $(@el).find('input#email').val()
       password = $(@el).find('input#password').val()
-      $.ajax({
-        type: "POST",
-        url: API_URL + "user/api-token",
-        crossDomain: true,
-        contentType: "application/json",
-        data: JSON.stringify({ email: email, password: password }),
-        context: @}
-      ).done (data) ->
+      $.post API_URL + "user/api-token", { email: email, password: password }, (data) ->
+        alert(data)
+    register: ->
+      name = 'Patrick'
+      email = $(@el).find('input#email').val()
+      password = $(@el).find('input#password').val()
+      $.post API_URL + "user", { name: name, email: email, password: password }, (data) ->
         alert(data)
 
   ########
