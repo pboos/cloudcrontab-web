@@ -1,4 +1,6 @@
 jQuery ->
+  API_URL = 'http://api.cloudcrontab.com/'
+
   ########
   # Models
   ########
@@ -40,7 +42,7 @@ jQuery ->
       $(@el).remove()
 
   class ListView extends Backbone.View
-    el: $ 'body'
+    el: $ '.content'
 
     initialize: ->
       _.bindAll @
@@ -65,7 +67,23 @@ jQuery ->
 
     events: 'click button': 'addItem'
 
-  list_view = new ListView
+  class LoginView extends Backbone.View
+    el: $ '.content-login'
+    initialize: ->
+      $(@el).removeClass 'hide'
+    events: 'click button': 'login'
+    login: ->
+      email = $(@el).find('input#email').val()
+      password = $(@el).find('input#password').val()
+      $.ajax({
+        type: "POST",
+        url: API_URL + "user/api-token",
+        crossDomain: true,
+        contentType: "application/json",
+        data: JSON.stringify({ email: email, password: password }),
+        context: @}
+      ).done (data) ->
+        alert(data)
 
   ########
   # Router
@@ -78,12 +96,13 @@ jQuery ->
     initialize: ->
       console.log 'init'
     login: ->
-      console.log 'login'
-      # $('#loginModal').modal('show')
+      new LoginView
     tasks: ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
-      alert 'tasks'
+
+      $('content').show()
+      list_view = new ListView
     help3: ->
       alert 'help3'
 

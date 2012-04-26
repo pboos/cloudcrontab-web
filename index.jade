@@ -3,6 +3,7 @@ html(lang="en")
   head
     title CloudCrontab
     link(rel='stylesheet',href='css/bootstrap.min.css')
+    link(rel='stylesheet',href='css/app.css')
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
     script(src='http://cdnjs.cloudflare.com/ajax/libs/json2/20110223/json2.js')
     script(src='http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js')
@@ -11,11 +12,25 @@ html(lang="en")
     script(src='js/bootstrap.min.js')
     script(src='js/app.js')
   body
-    h1 CloudCrontab
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          a.brand CloudCrontab
 
+    .container
+      .content.hide
 
-    .login
-      form.well
-        label Label name
-        input.span3(type='text',placeholder='Type something…')
-        button.btn(type='submit') asdf
+      .content-login.hide
+        h2 Login
+        form.form-horizontal
+          fieldset
+            .control-group
+              label.control-label(for='email') E-Mail
+              .controls
+                input.input-xlarge(type='text',id='email')
+            .control-group
+              label.control-label(for='password') Password
+              .controls
+                input.input-xlarge(type='password',id='password')
+            .form-actions
+              button.btn(type='submit') Login
