@@ -154,8 +154,6 @@ jQuery ->
         console.log data
       request.error (err) ->
         console.log err
-    help3: ->
-      alert 'help3'
 
   class AppView
     show: (view) ->
