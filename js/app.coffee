@@ -74,7 +74,7 @@ jQuery ->
   class LoginView extends Backbone.View
     render: ->
       template = Handlebars.compile($("#login").html())
-      $(this.el).html(template({title: 'Login', button: 'Login'}))
+      $(@el).html(template({title: 'Login', button: 'Login'}))
     events:
       'click button': 'login'
       'click a.register': 'register'
@@ -83,7 +83,7 @@ jQuery ->
       password = $(@el).find('input#password').val()
       that = @
       request = $.post API_URL + "user/api-token", { email: email, password: password }, (data) ->
-          setLogin data['api-token']
+          setLogin email, data['api-token']
           app.navigate '', {trigger: true}
       request.error (err) ->
         alert 'Login failed'
@@ -93,7 +93,8 @@ jQuery ->
   class RegisterView extends Backbone.View
     render: ->
       template = Handlebars.compile($("#login").html())
-      $(this.el).html(template({title: 'Register', button: 'Register', register: true}))
+      $(@el).html(template({title: 'Register', button: 'Register', register: true}))
+      $(@el).find('a.register').hide()
     events:
       'click button': 'register'
     register: ->
@@ -105,6 +106,17 @@ jQuery ->
         console.log(data)
       request.error ->
         alert 'error!'
+
+  class UserBadgeView extends Backbone.View
+    el: $ 'ul.nav li.userbadge'
+    initialize: ->
+      @update()
+    update: ->
+      if isLoggedIn()
+        $(@el).html getEmail
+      else
+        $(@el).html '<a href=\'#login\'>Login</a>'
+
 
   ########
   # Router
@@ -145,13 +157,17 @@ jQuery ->
   ########
   isLoggedIn = ->
     return !!localStorage.getItem 'api-key'
-  setLogin = (token) ->
+  setLogin = (email, token) ->
+    localStorage.setItem 'email', email
     localStorage.setItem 'api-key', token
-  getLogin = ->
+  getToken = ->
     localStorage.getItem 'api-key'
+  getEmail = ->
+    localStorage.getItem 'email'
 
   ########
   # Start
   ########
-  app = new CloudCrontabRouter()
+  app = new CloudCrontabRouter
+  app.userBadge = new UserBadgeView
   Backbone.history.start()
