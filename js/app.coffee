@@ -16,6 +16,10 @@ jQuery ->
   #######
   # Views
   #######
+  Backbone.View::close = ->
+    @remove()
+    @unbind()
+    @undelegateEvents()
 
   class ItemView extends Backbone.View
     tagName: 'li'
@@ -68,44 +72,73 @@ jQuery ->
     events: 'click button': 'addItem'
 
   class LoginView extends Backbone.View
-    el: $ '.content-login'
-    initialize: ->
-      $(@el).removeClass 'hide'
-    events: 'click .login': 'login'
-    events: 'click .register': 'register'
+    render: ->
+      template = Handlebars.compile($("#login").html())
+      $(this.el).html(template({title: 'Login', button: 'Login'}))
+    events:
+      'click button': 'login'
+      'click a.register': 'register'
     login: ->
-      alert 'login'
       email = $(@el).find('input#email').val()
       password = $(@el).find('input#password').val()
-      $.post API_URL + "user/api-token", { email: email, password: password }, (data) ->
-        alert(data)
+      that = @
+      request = $.post API_URL + "user/api-token", { email: email, password: password }, (data) ->
+          setLogin data['api-token']
+          app.navigate '', {trigger: true}
+      request.error (err) ->
+        alert 'Login failed'
     register: ->
-      name = 'Patrick'
+      app.navigate 'register', {trigger: true}
+
+  class RegisterView extends Backbone.View
+    render: ->
+      template = Handlebars.compile($("#login").html())
+      $(this.el).html(template({title: 'Register', button: 'Register', register: true}))
+    events:
+      'click button': 'register'
+    register: ->
+      name = $(@el).find('input#name').val()
       email = $(@el).find('input#email').val()
       password = $(@el).find('input#password').val()
-      $.post API_URL + "user", { name: name, email: email, password: password }, (data) ->
-        alert(data)
+      that = @
+      request = $.post API_URL + "user", { name: name, email: email, password: password }, (data) ->
+        console.log(data)
+      request.error ->
+        alert 'error!'
 
   ########
   # Router
   ########
   class CloudCrontabRouter extends Backbone.Router
+    currentView: undefined
     routes:
       "":     "tasks"
       "login":    "login"
-      "help3":    "help3"
+      "register":    "register"
+
     initialize: ->
       console.log 'init'
+      @appView = new AppView
     login: ->
-      new LoginView
+      @appView.show new LoginView
+    register: ->
+      @appView.show new RegisterView
     tasks: ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
 
       $('content').show()
-      list_view = new ListView
+      @appView.show new ListView
     help3: ->
       alert 'help3'
+
+  class AppView
+    show: (view) ->
+      if @currentView
+        @currentView.close()
+      @currentView = view
+      @currentView.render()
+      $(".container#content").html @currentView.el
 
   ########
   # Functions

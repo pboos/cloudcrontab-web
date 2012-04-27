@@ -17,21 +17,27 @@ html(lang="en")
         .container
           a.brand CloudCrontab
 
-    .container
-      .content.hide
+    .container#content
 
-      .content-login.hide
-        h2 Login
-        form.form-horizontal
-          fieldset
-            .control-group
-              label.control-label(for='email') E-Mail
-              .controls
-                input.input-xlarge(type='text',id='email')
-            .control-group
-              label.control-label(for='password') Password
-              .controls
-                input.input-xlarge(type='password',id='password')
-            .form-actions
-              button.btn.login(type='submit') Login
-              button.btn.register(type='submit') Register
+
+    script#login(type='text/x-handlebars-template')
+      h2 {{title}}
+      form.form-horizontal
+        fieldset
+          {{#if register}}
+          .control-group.name
+            label.control-label(for='name') Name
+            .controls
+              input.input-xlarge(type='text',id='name')
+          {{/if}}
+          .control-group
+            label.control-label(for='email') E-Mail
+            .controls
+              input.input-xlarge(type='text',id='email')
+          .control-group
+            label.control-label(for='password') Password
+            .controls
+              input.input-xlarge(type='password',id='password')
+          .form-actions
+            button.btn(type='submit') {{button}}
+            a.register  Register
