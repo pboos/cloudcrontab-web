@@ -4,13 +4,11 @@ jQuery ->
   ########
   # Models
   ########
-  class Item extends Backbone.Model
-    defaults:
-      part1: 'Hello'
-      part2: 'Backbone'
+  class Task extends Backbone.Model
 
-  class List extends Backbone.Collection
-    model: Item
+  class Tasks extends Backbone.Collection
+    url: API_URL + 'tasks'
+    model: Task
 
 
   #######
@@ -21,7 +19,7 @@ jQuery ->
     @unbind()
     @undelegateEvents()
 
-  class ItemView extends Backbone.View
+  class TaskView extends Backbone.View
     tagName: 'li'
     initialize: ->
       _.bindAll @
@@ -45,12 +43,12 @@ jQuery ->
     unrender: =>
       $(@el).remove()
 
-  class ListView extends Backbone.View
-    el: $ '.content'
+  class TaskListView extends Backbone.View
+    el: $ '.container#content'
 
     initialize: ->
       _.bindAll @
-      @collection = new List
+      @collection = new Tasks
       @collection.bind 'add', @appendItem
       @counter = 0
       @render()
@@ -61,12 +59,12 @@ jQuery ->
 
     addItem: ->
       @counter++
-      item = new Item
+      item = new Task
       item.set part2: "#{item.get 'part2'} #{@counter}"
       @collection.add item
 
     appendItem: (item) ->
-      item_view = new ItemView model: item
+      item_view = new TaskView model: item
       $('ul').append item_view.render().el
 
     events: 'click button': 'addItem'
@@ -83,8 +81,9 @@ jQuery ->
       password = $(@el).find('input#password').val()
       that = @
       request = $.post API_URL + "user/api-token", { email: email, password: password }, (data) ->
-          setLogin email, data['api-token']
-          app.navigate '', {trigger: true}
+        setLogin email, JSON.parse(data)['api-token']
+        app.userBadge.render()
+        app.navigate '', {trigger: true}
       request.error (err) ->
         alert 'Login failed'
     register: ->
@@ -110,8 +109,8 @@ jQuery ->
   class UserBadgeView extends Backbone.View
     el: $ 'ul.nav li.userbadge'
     initialize: ->
-      @update()
-    update: ->
+      @render()
+    render: ->
       if isLoggedIn()
         $(@el).html getEmail
       else
@@ -138,9 +137,11 @@ jQuery ->
     tasks: ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
-
-      $('content').show()
-      @appView.show new ListView
+      # @appView.show new TaskListView
+      request = $.get API_URL + "tasks", (data) ->
+        console.log data
+      request.error (err) ->
+        console.log err
     help3: ->
       alert 'help3'
 
@@ -160,14 +161,27 @@ jQuery ->
   setLogin = (email, token) ->
     localStorage.setItem 'email', email
     localStorage.setItem 'api-key', token
+    setUpAjaxAuth()
   getToken = ->
     localStorage.getItem 'api-key'
   getEmail = ->
     localStorage.getItem 'email'
 
+  setUpAjaxAuth = ->
+    if !isLoggedIn
+      return
+    $.ajaxSetup 
+      beforeSend: (xhr, settings) ->
+        settings.url = settings.url + '?token=' + getToken()
+        #dataobj = JSON.parse(xhr.data || '{}')
+        #dataobj.token = getToken()
+        #console.log JSON.stringify dataobj
+        #xhr.data = JSON.stringify dataobj
+
   ########
   # Start
   ########
+  setUpAjaxAuth()
   app = new CloudCrontabRouter
   app.userBadge = new UserBadgeView
   Backbone.history.start()
