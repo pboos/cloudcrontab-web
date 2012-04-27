@@ -112,8 +112,15 @@ jQuery ->
       @render()
     render: ->
       if isLoggedIn()
-        $(@el).html getEmail
+        $(@el).addClass 'dropdown'
+        $(@el).html '''
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">''' + getEmail() + ''' <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="#logout">Logout</a></li>
+              </ul>
+          '''
       else
+        $(@el).removeClass 'dropdown'
         $(@el).html '<a href=\'#login\'>Login</a>'
 
 
@@ -123,15 +130,20 @@ jQuery ->
   class CloudCrontabRouter extends Backbone.Router
     currentView: undefined
     routes:
-      "":     "tasks"
+      "":         "tasks"
       "login":    "login"
-      "register":    "register"
+      "logout":   "logout"
+      "register": "register"
 
     initialize: ->
       console.log 'init'
       @appView = new AppView
     login: ->
       @appView.show new LoginView
+    logout: ->
+      logout()
+      app.userBadge.render()
+      app.navigate 'login', {trigger: true}
     register: ->
       @appView.show new RegisterView
     tasks: ->
@@ -161,6 +173,10 @@ jQuery ->
   setLogin = (email, token) ->
     localStorage.setItem 'email', email
     localStorage.setItem 'api-key', token
+    setUpAjaxAuth()
+  logout = ->
+    localStorage.removeItem 'email'
+    localStorage.removeItem 'api-key'
     setUpAjaxAuth()
   getToken = ->
     localStorage.getItem 'api-key'
