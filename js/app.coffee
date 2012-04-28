@@ -5,11 +5,13 @@ jQuery ->
   # Models
   ########
   class Task extends Backbone.Model
+    url: API_URL + 'task'
 
   class Tasks extends Backbone.Collection
     url: API_URL + 'tasks'
     model: Task
-
+    parse: (response) ->
+      response.tasks
 
   #######
   # Views
@@ -20,54 +22,53 @@ jQuery ->
     @undelegateEvents()
 
   class TaskView extends Backbone.View
-    tagName: 'li'
+    tagName: 'tr'
     initialize: ->
       _.bindAll @
       @model.bind 'change', @render
       @model.bind 'remove', @unrender
     render: ->
-      $(@el).html """
-        <span>#{@model.get 'part1'} #{@model.get 'part2'}!</span>
-        <span class="swap">swap</span>
-        <span class="delete">delete</span>
-      """
+      template = Handlebars.compile($("#task").html())
+      data =
+        name: @model.get 'name'
+        url: @model.get 'url'
+        crontab: @model.get 'schedule-crontab'
+      $(@el).html(template(data))
       @
     events:
-      'click .swap': 'swap'
       'click .delete': 'remove'
     remove: -> @model.destroy()
-    swap: ->
-      @model.set
-        part1: @model.get 'part2'
-        part2: @model.get 'part1'
     unrender: =>
       $(@el).remove()
 
   class TaskListView extends Backbone.View
-    el: $ '.container#content'
-
     initialize: ->
       _.bindAll @
       @collection = new Tasks
-      @collection.bind 'add', @appendItem
-      @counter = 0
-      @render()
+      @collection.bind 'add', @render
+      @collection.bind 'change', @render
+      @collection.fetch
+        success: @render
 
     render: ->
-      $(@el).append '<button>Add item</button>'
-      $(@el).append '<ul></ul>'
+      template = Handlebars.compile($("#tasks").html())
+      $(@el).html(template({}))
+      @collection.forEach (item) ->
+        itemView = new TaskView model: item
+        $('tbody').append itemView.render().el
+      @
 
-    addItem: ->
+    events: 'click a.create': 'createTask'
+
+    createTask: ->
       @counter++
       item = new Task
-      item.set part2: "#{item.get 'part2'} #{@counter}"
+      item.set 'name', 'Test'
+      item.set 'url', 'http://asdf.asdf.com'
+      item.set 'schedule-crontab', '* * * * *'
+      item.save()
       @collection.add item
 
-    appendItem: (item) ->
-      item_view = new TaskView model: item
-      $('ul').append item_view.render().el
-
-    events: 'click button': 'addItem'
 
   class LoginView extends Backbone.View
     render: ->
@@ -149,11 +150,7 @@ jQuery ->
     tasks: ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
-      # @appView.show new TaskListView
-      request = $.get API_URL + "tasks", (data) ->
-        console.log data
-      request.error (err) ->
-        console.log err
+      @appView.show new TaskListView
 
   class AppView
     show: (view) ->

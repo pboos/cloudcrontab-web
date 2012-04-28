@@ -43,3 +43,18 @@ html(lang="en")
           .form-actions
             button.btn(type='submit') {{button}}
             a.register  Register
+
+    script#tasks(type='text/x-handlebars-template')
+      a.create create
+      table.table
+        thead
+          tr
+            th Name
+            th url
+            th crontab
+        tbody
+
+    script#task(type='text/x-handlebars-template')
+      td {{name}}
+      td {{url}}
+      td {{crontab}}
