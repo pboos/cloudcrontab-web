@@ -82,7 +82,9 @@ jQuery ->
       password = $(@el).find('input#password').val()
       that = @
       request = $.post API_URL + "user/api-token", { email: email, password: password }, (data) ->
-        setLogin email, JSON.parse(data)['api-token']
+        if typeof data == 'string'
+          data = JSON.parse data
+        setLogin email, data['api-token']
         app.userBadge.render()
         app.navigate '', {trigger: true}
       request.error (err) ->
