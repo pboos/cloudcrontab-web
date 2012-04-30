@@ -61,14 +61,23 @@ jQuery ->
     events: 'click a.create': 'createTask'
 
     createTask: ->
-      @counter++
-      item = new Task
-      item.set 'name', 'Test'
-      item.set 'url', 'http://asdf.asdf.com'
-      item.set 'schedule-crontab', '* * * * *'
-      item.save()
-      @collection.add item
+      app.navigate 'task/create', {trigger: true}
 
+  class CreateTaskView extends Backbone.View
+    render: ->
+      template = Handlebars.compile($("#task-create").html())
+      $(@el).html(template())
+    events:
+      'click button': 'create'
+    create: ->
+      name = $(@el).find('input#name').val()
+      url = $(@el).find('input#url').val()
+      crontab = $(@el).find('input#crontab').val()
+      that = @
+      request = $.post API_URL + "task", { name: name, url: url, 'schedule-crontab': crontab }, (data) ->
+        app.navigate '', {trigger: true}
+      request.error (data) ->
+        alert JSON.parse(data.responseText).details.message
 
   class LoginView extends Backbone.View
     render: ->
@@ -133,10 +142,11 @@ jQuery ->
   class CloudCrontabRouter extends Backbone.Router
     currentView: undefined
     routes:
-      "":         "tasks"
-      "login":    "login"
-      "logout":   "logout"
-      "register": "register"
+      "":            "tasks"
+      "login":       "login"
+      "logout":      "logout"
+      "register":    "register"
+      "task/create": "task_create"
 
     initialize: ->
       console.log 'init'
@@ -153,6 +163,10 @@ jQuery ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
       @appView.show new TaskListView
+    task_create: ->
+      if !isLoggedIn()
+        return app.navigate 'login', {trigger: true}
+      @appView.show new CreateTaskView
 
   class AppView
     show: (view) ->
@@ -183,7 +197,7 @@ jQuery ->
   setUpAjaxAuth = ->
     if !isLoggedIn
       return
-    $.ajaxSetup 
+    $.ajaxSetup
       beforeSend: (xhr, settings) ->
         settings.url = settings.url + '?token=' + getToken()
         #dataobj = JSON.parse(xhr.data || '{}')

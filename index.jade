@@ -45,7 +45,9 @@ html(lang="en")
             a.register  Register
 
     script#tasks(type='text/x-handlebars-template')
-      a.create create
+      a.btn.btn.create
+        i.icon-plus
+        span  Add new task
       table.table
         thead
           tr
@@ -53,6 +55,26 @@ html(lang="en")
             th url
             th crontab
         tbody
+
+    script#task-create(type='text/x-handlebars-template')
+      h2 Create
+      form.form-horizontal
+        fieldset
+          .control-group
+            label.control-label(for='name') Name
+            .controls
+              input.input-xlarge(type='text',id='name')
+          .control-group
+            label.control-label(for='url') URL
+            .controls
+              input.input-xlarge(type='text',id='url')
+          .control-group
+            label.control-label(for='url') crontab (* * * * *)
+            .controls
+              input.input-xlarge(type='text',id='crontab')
+          .form-actions
+            button.btn(type='submit') Create
+            a.register  Register
 
     script#task(type='text/x-handlebars-template')
       td {{name}}
