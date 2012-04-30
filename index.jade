@@ -54,6 +54,7 @@ html(lang="en")
             th Name
             th url
             th crontab
+            th
         tbody
 
     script#task-create(type='text/x-handlebars-template')
@@ -80,3 +81,7 @@ html(lang="en")
       td {{name}}
       td {{url}}
       td {{crontab}}
+      td
+        a.delete
+          i.icon-trash
+

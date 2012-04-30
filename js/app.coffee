@@ -5,7 +5,7 @@ jQuery ->
   # Models
   ########
   class Task extends Backbone.Model
-    url: API_URL + 'task'
+    url: -> API_URL + 'task/' + @id
 
   class Tasks extends Backbone.Collection
     url: API_URL + 'tasks'
@@ -38,8 +38,7 @@ jQuery ->
     events:
       'click .delete': 'remove'
     remove: -> @model.destroy()
-    unrender: =>
-      $(@el).remove()
+    unrender: => $(@el).remove()
 
   class TaskListView extends Backbone.View
     initialize: ->
