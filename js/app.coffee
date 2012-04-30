@@ -21,14 +21,16 @@ jQuery ->
     @unbind()
     @undelegateEvents()
 
-  class TaskView extends Backbone.View
+  # Tasks
+
+  class TaskLineView extends Backbone.View
     tagName: 'tr'
     initialize: ->
       _.bindAll @
       @model.bind 'change', @render
       @model.bind 'remove', @unrender
     render: ->
-      template = Handlebars.compile($("#task").html())
+      template = Handlebars.compile($("#task-line").html())
       data =
         name: @model.get 'name'
         url: @model.get 'url'
@@ -37,8 +39,10 @@ jQuery ->
       @
     events:
       'click .delete': 'remove'
+      'click': 'open'
     remove: -> @model.destroy()
     unrender: => $(@el).remove()
+    open: ->  app.navigate 'task/' + @model.get('id'), {trigger: true}
 
   class TaskListView extends Backbone.View
     initialize: ->
@@ -53,7 +57,7 @@ jQuery ->
       template = Handlebars.compile($("#tasks").html())
       $(@el).html(template({}))
       @collection.forEach (item) ->
-        itemView = new TaskView model: item
+        itemView = new TaskLineView model: item
         $('tbody').append itemView.render().el
       @
 
@@ -61,6 +65,19 @@ jQuery ->
 
     createTask: ->
       app.navigate 'task/create', {trigger: true}
+
+  # Task
+
+  class TaskView extends Backbone.View
+    render: ->
+      template = Handlebars.compile($("#task").html())
+      $(@el).html(template())
+
+  class LogListView extends Backbone.View
+
+  class LogItemView extends Backbone.View
+
+  # Create Task
 
   class CreateTaskView extends Backbone.View
     render: ->
@@ -77,6 +94,8 @@ jQuery ->
         app.navigate '', {trigger: true}
       request.error (data) ->
         alert JSON.parse(data.responseText).details.message
+
+  # Login
 
   class LoginView extends Backbone.View
     render: ->
@@ -100,6 +119,8 @@ jQuery ->
     register: ->
       app.navigate 'register', {trigger: true}
 
+  # Register
+
   class RegisterView extends Backbone.View
     render: ->
       template = Handlebars.compile($("#login").html())
@@ -116,6 +137,8 @@ jQuery ->
         console.log(data)
       request.error ->
         alert 'error!'
+
+  # User badge
 
   class UserBadgeView extends Backbone.View
     el: $ 'ul.nav li.userbadge'
@@ -146,6 +169,7 @@ jQuery ->
       "logout":      "logout"
       "register":    "register"
       "task/create": "task_create"
+      "task/:id":    "task"
 
     initialize: ->
       console.log 'init'
@@ -162,6 +186,14 @@ jQuery ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
       @appView.show new TaskListView
+    task: (id)->
+      if !isLoggedIn()
+        return app.navigate 'login', {trigger: true}
+
+      task = new Task {id: id}
+      task.fetch
+        success: ->
+          new TaskView model: task
     task_create: ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}

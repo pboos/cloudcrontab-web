@@ -44,6 +44,26 @@ html(lang="en")
             button.btn(type='submit') {{button}}
             a.register  Register
 
+    script#task(type='text/x-handlebars-template')
+      h3 {{name}}
+      table.table
+        tbody
+          tr
+            td URL
+            td {{url}}
+          tr
+            td crontab
+            tc {{crontab}}
+      h4 Logs
+      table.table
+        thead
+          tr
+            th Name
+            th Date
+            th Code
+            th
+        tbody
+
     script#tasks(type='text/x-handlebars-template')
       a.btn.btn.create
         i.icon-plus
@@ -77,7 +97,7 @@ html(lang="en")
             button.btn(type='submit') Create
             a.register  Register
 
-    script#task(type='text/x-handlebars-template')
+    script#task-line(type='text/x-handlebars-template')
       td {{name}}
       td {{url}}
       td {{crontab}}
