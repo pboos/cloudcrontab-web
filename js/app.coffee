@@ -71,7 +71,7 @@ jQuery ->
   class TaskView extends Backbone.View
     render: ->
       template = Handlebars.compile($("#task").html())
-      $(@el).html(template())
+      $(@el).html(template(@model.toJSON()))
 
   class LogListView extends Backbone.View
 
@@ -191,9 +191,10 @@ jQuery ->
         return app.navigate 'login', {trigger: true}
 
       task = new Task {id: id}
+      theAppView = @appView
       task.fetch
         success: ->
-          new TaskView model: task
+          theAppView.show new TaskView model: task
     task_create: ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
