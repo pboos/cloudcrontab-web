@@ -13,6 +13,15 @@ jQuery ->
     parse: (response) ->
       response.tasks
 
+  class Log extends Backbone.Model
+    url: -> API_URL + 'task/' + @task_id + '/log/' + @id
+
+  class Logs extends Backbone.Collection
+    url: -> API_URL + 'task/' + @task_id + '/logs'
+    model: Log
+    parse: (response) ->
+      response.logs
+
   #######
   # Views
   #######
@@ -69,11 +78,26 @@ jQuery ->
   # Task
 
   class TaskView extends Backbone.View
+    initialize: ->
+      thisView = @
+      render = -> thisView.render.apply thisView
+      @model.fetch
+        success: render
+
     render: ->
+      console.log 'rendering'
       template = Handlebars.compile($("#task").html())
       $(@el).html(template(@model.toJSON()))
+      new LogListView task_id: @model.get('id')
+      @
 
   class LogListView extends Backbone.View
+    initialize: ->
+      @collection = new Logs task_id: @task_id
+      @collection.fetch
+        success: @render
+    render: ->
+      console.log 'render'
 
   class LogItemView extends Backbone.View
 
@@ -189,12 +213,9 @@ jQuery ->
     task: (id)->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
-
       task = new Task {id: id}
-      theAppView = @appView
-      task.fetch
-        success: ->
-          theAppView.show new TaskView model: task
+      view = new TaskView {model: task}
+      @appView.show view
     task_create: ->
       if !isLoggedIn()
         return app.navigate 'login', {trigger: true}
