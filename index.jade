@@ -63,6 +63,13 @@ html(lang="en")
             th Code
             th
         tbody
+    script#log-line(type='text/x-handlebars-template')
+      td {{date}}
+      td {{duration}}
+      td {{code}}
+      td
+        a.delete(href='#')
+          i.icon-trash
 
     script#tasks(type='text/x-handlebars-template')
       a.btn.btn.create
@@ -76,6 +83,14 @@ html(lang="en")
             th crontab
             th
         tbody
+
+    script#task-line(type='text/x-handlebars-template')
+      td {{name}}
+      td {{url}}
+      td {{schedule-crontab}}
+      td
+        a.delete(href='#')
+          i.icon-trash
 
     script#task-create(type='text/x-handlebars-template')
       h2 Create
@@ -96,11 +111,3 @@ html(lang="en")
           .form-actions
             button.btn(type='submit') Create
             a.register  Register
-
-    script#task-line(type='text/x-handlebars-template')
-      td {{name}}
-      td {{url}}
-      td {{crontab}}
-      td
-        a.delete(href='#')
-          i.icon-trash

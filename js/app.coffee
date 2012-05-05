@@ -32,27 +32,6 @@ jQuery ->
 
   # Tasks
 
-  class TaskLineView extends Backbone.View
-    tagName: 'tr'
-    initialize: ->
-      _.bindAll @
-      @model.bind 'change', @render
-      @model.bind 'remove', @unrender
-    render: ->
-      template = Handlebars.compile($("#task-line").html())
-      data =
-        name: @model.get 'name'
-        url: @model.get 'url'
-        crontab: @model.get 'schedule-crontab'
-      $(@el).html(template(data))
-      @
-    events:
-      'click .delete': 'remove'
-      'click': 'open'
-    remove: -> @model.destroy()
-    unrender: => $(@el).remove()
-    open: ->  app.navigate 'task/' + @model.get('id'), {trigger: true}
-
   class TaskListView extends Backbone.View
     initialize: ->
       _.bindAll @
@@ -75,31 +54,62 @@ jQuery ->
     createTask: ->
       app.navigate 'task/create', {trigger: true}
 
+  class TaskLineView extends Backbone.View
+    tagName: 'tr'
+    initialize: ->
+      _.bindAll @
+      @model.bind 'change', @render
+      @model.bind 'remove', @unrender
+    render: ->
+      template = Handlebars.compile($("#task-line").html())
+      $(@el).html(template(@model.toJSON()))
+      @
+    events:
+      'click .delete': 'remove'
+      'click': 'open'
+    remove: -> @model.destroy()
+    unrender: => $(@el).remove()
+    open: ->  app.navigate 'task/' + @model.get('id'), {trigger: true}
+
   # Task
 
   class TaskView extends Backbone.View
     initialize: ->
-      thisView = @
-      render = -> thisView.render.apply thisView
+      _.bindAll @
       @model.fetch
-        success: render
+        success: @render
 
     render: ->
-      console.log 'rendering'
       template = Handlebars.compile($("#task").html())
       $(@el).html(template(@model.toJSON()))
-      new LogListView task_id: @model.get('id')
+      # TODO currently this is called twice...
+      new LogListView id: @model.get('id')
       @
 
   class LogListView extends Backbone.View
     initialize: ->
-      @collection = new Logs task_id: @task_id
+      _.bindAll @
+      @collection = new Logs
+      @collection.task_id = @id
       @collection.fetch
         success: @render
     render: ->
-      console.log 'render'
+      @collection.forEach (log) ->
+        logView = new LogLineView model: log
+        $('#logs tbody').append logView.render().el
+      @
 
-  class LogItemView extends Backbone.View
+  class LogLineView extends Backbone.View
+    tagName: 'tr'
+    render: ->
+      template = Handlebars.compile($("#log-line").html())
+      $(@el).html(template(@model.toJSON()))
+      @
+    events:
+      'click .delete': 'remove'
+      'click': 'open'
+    open: ->
+      app.navigate 'task/' + @model.get('id'), {trigger: true}
 
   # Create Task
 
